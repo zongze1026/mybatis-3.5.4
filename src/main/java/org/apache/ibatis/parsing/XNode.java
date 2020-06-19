@@ -319,6 +319,10 @@ public class XNode {
     return children;
   }
 
+
+  /**
+   * 解析所有子标签的属性
+   */
   public Properties getChildrenAsProperties() {
     Properties properties = new Properties();
     for (XNode child : getChildren()) {

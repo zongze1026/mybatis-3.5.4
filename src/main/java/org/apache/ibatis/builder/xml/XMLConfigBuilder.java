@@ -82,6 +82,7 @@ public class XMLConfigBuilder extends BaseBuilder {
   }
 
   private XMLConfigBuilder(XPathParser parser, String environment, Properties props) {
+    //条用父类初始化configuration对象
     super(new Configuration());
     ErrorContext.instance().resource("SQL Mapper Configuration");
     this.configuration.setVariables(props);
@@ -91,10 +92,12 @@ public class XMLConfigBuilder extends BaseBuilder {
   }
 
   public Configuration parse() {
+    //如果配置文件被解析过抛出异常
     if (parsed) {
       throw new BuilderException("Each XMLConfigBuilder can only be used once.");
     }
     parsed = true;
+    //开始解析configuration.xml文件
     parseConfiguration(parser.evalNode("/configuration"));
     return configuration;
   }
@@ -102,21 +105,21 @@ public class XMLConfigBuilder extends BaseBuilder {
   private void parseConfiguration(XNode root) {
     try {
       //issue #117 read properties first
-      propertiesElement(root.evalNode("properties"));
-      Properties settings = settingsAsProperties(root.evalNode("settings"));
+      propertiesElement(root.evalNode("properties"));  // 解析<properties>节点
+      Properties settings = settingsAsProperties(root.evalNode("settings"));  // 解析<settings>节点
       loadCustomVfs(settings);
       loadCustomLogImpl(settings);
-      typeAliasesElement(root.evalNode("typeAliases"));
-      pluginElement(root.evalNode("plugins"));
-      objectFactoryElement(root.evalNode("objectFactory"));
+      typeAliasesElement(root.evalNode("typeAliases"));  // 解析<typeAliases>节点
+      pluginElement(root.evalNode("plugins")); // 解析<plugins>节点
+      objectFactoryElement(root.evalNode("objectFactory"));   // 解析<objectFactory>节点
       objectWrapperFactoryElement(root.evalNode("objectWrapperFactory"));
       reflectorFactoryElement(root.evalNode("reflectorFactory"));
       settingsElement(settings);
       // read it after objectFactory and objectWrapperFactory issue #631
-      environmentsElement(root.evalNode("environments"));
+      environmentsElement(root.evalNode("environments")); // 解析<environments>节点
       databaseIdProviderElement(root.evalNode("databaseIdProvider"));
       typeHandlerElement(root.evalNode("typeHandlers"));
-      mapperElement(root.evalNode("mappers"));
+      mapperElement(root.evalNode("mappers")); // 解析<mappers>节点
     } catch (Exception e) {
       throw new BuilderException("Error parsing SQL Mapper Configuration. Cause: " + e, e);
     }
@@ -218,15 +221,26 @@ public class XMLConfigBuilder extends BaseBuilder {
     }
   }
 
+
+  /**
+   * <properties resource="org/mybatis/example/config.properties" url="www.baidu.com">
+   *     <property name="username" value="toms"/>
+   *     <property name="password" value="123"/>
+   *  </properties>
+   *
+   *  resource一般对应的是外部引入的properties文件
+   *
+   */
   private void propertiesElement(XNode context) throws Exception {
     if (context != null) {
-      Properties defaults = context.getChildrenAsProperties();
-      String resource = context.getStringAttribute("resource");
-      String url = context.getStringAttribute("url");
-      if (resource != null && url != null) {
+      Properties defaults = context.getChildrenAsProperties(); // 解析<properties>节点的所有子节点，并将解析的key-value封装到Properties中返回
+      String resource = context.getStringAttribute("resource"); //获取resource属性值
+      String url = context.getStringAttribute("url"); //获取url属性值
+      if (resource != null && url != null) { //resource和url属性值同时存在会抛出异常
         throw new BuilderException("The properties element cannot specify both a URL and a resource based property file reference.  Please specify one or the other.");
       }
       if (resource != null) {
+        //解析resource对应的键值对封装在Properties中
         defaults.putAll(Resources.getResourceAsProperties(resource));
       } else if (url != null) {
         defaults.putAll(Resources.getUrlAsProperties(url));
@@ -236,6 +250,7 @@ public class XMLConfigBuilder extends BaseBuilder {
         defaults.putAll(vars);
       }
       parser.setVariables(defaults);
+      //最后将解析的结果封装到configuration对象中
       configuration.setVariables(defaults);
     }
   }

@@ -13,7 +13,9 @@ public class TestMyBatis {
     }
 
     public static void main(String[] args) {
-        testInsert();
+//        testInsert();
+//      testSelectOne();
+      testSelectList();
     }
 
 
@@ -27,18 +29,18 @@ public class TestMyBatis {
     }
 
 
-    public void testDelete() {
+    public static void testDelete() {
         System.out.println(mailDao.deleteMail(1));
     }
 
 
 
-    public void testSelectOne() {
-        System.out.println(mailDao.selectMailById(2));
+    public static void testSelectOne() {
+        System.out.println(mailDao.selectMailById(13));
     }
 
 
-    public void testSelectList() {
+    public static void testSelectList() {
         List<Mail> mailList = mailDao.selectMailList();
         if (mailList != null && mailList.size() != 0) {
             for (Mail mail : mailList) {

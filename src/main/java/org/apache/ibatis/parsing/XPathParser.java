@@ -118,6 +118,7 @@ public class XPathParser {
   }
 
   public XPathParser(Reader reader, boolean validation, Properties variables, EntityResolver entityResolver) {
+    //该方法主要配置XPathParser属性
     commonConstructor(validation, variables, entityResolver);
     this.document = createDocument(new InputSource(reader));
   }
@@ -266,6 +267,14 @@ public class XPathParser {
     }
   }
 
+
+  /**
+   *
+   * @param validation 是否校验
+   * @param variables
+   * @param entityResolver 解析器
+   * @return void
+   */
   private void commonConstructor(boolean validation, Properties variables, EntityResolver entityResolver) {
     this.validation = validation;
     this.entityResolver = entityResolver;

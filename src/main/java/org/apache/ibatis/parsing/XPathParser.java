@@ -227,18 +227,20 @@ public class XPathParser {
     }
   }
 
+
+  //将xml的input流解析成Document对象；并封装在xpath对象中
   private Document createDocument(InputSource inputSource) {
     // important: this must only be called AFTER common constructor
     try {
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
       factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-      factory.setValidating(validation);
+      factory.setValidating(validation);  //是否验证xml文件
 
-      factory.setNamespaceAware(false);
-      factory.setIgnoringComments(true);
-      factory.setIgnoringElementContentWhitespace(false);
-      factory.setCoalescing(false);
-      factory.setExpandEntityReferences(true);
+      factory.setNamespaceAware(false); //表示是否支持xml命名空间
+      factory.setIgnoringComments(true); //表示是否忽略注释
+      factory.setIgnoringElementContentWhitespace(false); //表示是否忽略元素中的空白
+      factory.setCoalescing(false); //表示是否将CDATA节点转换为Text节点，并将其附加到相邻（如果有）的Text节点
+      factory.setExpandEntityReferences(true); //表示是否扩展实体引用节点
 
       DocumentBuilder builder = factory.newDocumentBuilder();
       builder.setEntityResolver(entityResolver);

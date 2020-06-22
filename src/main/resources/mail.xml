@@ -17,7 +17,7 @@
         id, create_time, modify_time, web_id, mail, use_for
     </sql>
 
-  <sql id="fields_value">
+    <sql id="fields_value">
         null, now(), now(), #{webId}, #{mail}, #{useFor}
     </sql>
 

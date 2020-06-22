@@ -109,7 +109,7 @@ public class XMLConfigBuilder extends BaseBuilder {
       Properties settings = settingsAsProperties(root.evalNode("settings"));  // 解析<settings>节点
       loadCustomVfs(settings);
       loadCustomLogImpl(settings);
-      typeAliasesElement(root.evalNode("typeAliases"));  // 解析<typeAliases>节点
+      typeAliasesElement(root.evalNode("typeAliases"));  // 解析别名<typeAliases>节点
       pluginElement(root.evalNode("plugins")); // 解析<plugins>节点
       objectFactoryElement(root.evalNode("objectFactory"));   // 解析<objectFactory>节点
       objectWrapperFactoryElement(root.evalNode("objectWrapperFactory"));
@@ -125,13 +125,25 @@ public class XMLConfigBuilder extends BaseBuilder {
     }
   }
 
+
+  /**
+   *  <settings>
+   *     <setting name="cacheEnabled" value="true" />
+   *     <setting name="lazyLoadingEnabled" value="true"/>
+   *     <setting name="useGeneratedKeys" value="true"/>
+   *     <setting name="hellow" value="123"/>
+   *   </settings>
+   */
   private Properties settingsAsProperties(XNode context) {
     if (context == null) {
       return new Properties();
     }
+    //直接解析settings下的子标签，并解析出name和value键值对，封装成properties对象返回
     Properties props = context.getChildrenAsProperties();
     // Check that all settings are known to the configuration class
     MetaClass metaConfig = MetaClass.forClass(Configuration.class, localReflectorFactory);
+    //1.遍历所有key(对应setting中name)属性是否合法
+    //2.比如name随便给一个值为hellow，那么将会抛出异常，ke不合法
     for (Object key : props.keySet()) {
       if (!metaConfig.hasSetter(String.valueOf(key))) {
         throw new BuilderException("The setting " + key + " is not known.  Make sure you spelled it correctly (case sensitive).");
@@ -159,13 +171,34 @@ public class XMLConfigBuilder extends BaseBuilder {
     configuration.setLogImpl(logImpl);
   }
 
+
+
+  /**
+   * 别名的定义有一下两种：
+   * <typeAliases>
+   *   <typeAlias alias="Author" type="domain.blog.Author"/>
+   *   <typeAlias alias="Blog" type="domain.blog.Blog"/>
+   * </typeAliases>
+   * 这种方式会解析出配置的别名；每一个都需要配置
+   *
+   * <typeAliases>
+   *   <package name="domain.blog"/>
+   * </typeAliases>
+   * 这种方式mybatis会为该包下的每一个entity都生产一个别名（首字母小写的类名）
+   *
+   */
   private void typeAliasesElement(XNode parent) {
     if (parent != null) {
+      //遍历typeAliases下的子节点
       for (XNode child : parent.getChildren()) {
+        //如果是以package的形式配置的话，就注册包下的所有类
         if ("package".equals(child.getName())) {
+          //获取到报名称
           String typeAliasPackage = child.getStringAttribute("name");
+          //注册该包下所有的别名
           configuration.getTypeAliasRegistry().registerAliases(typeAliasPackage);
         } else {
+          //如果时单个配置的情况的话就解析出所有的配置进行注册
           String alias = child.getStringAttribute("alias");
           String type = child.getStringAttribute("type");
           try {
@@ -372,9 +405,31 @@ public class XMLConfigBuilder extends BaseBuilder {
     }
   }
 
+
+  /**
+   * mappers标签一共有四种配置方式：
+   * 1.直接配置包名
+   * <mappers>
+   *   <package name="org.mybatis.builder"/>
+   * </mappers>
+   *
+   * <mappers>
+   *   <mapper resource="org/mybatis/builder/AuthorMapper.xml"/>
+   * </mappers>
+   *
+   * <mappers>
+   *   <mapper url="file:///var/mappers/AuthorMapper.xml"/>
+   * </mappers>
+   *
+   * <mappers>
+   *   <mapper class="org.mybatis.builder.AuthorMapper"/>
+   * </mappers>
+   */
   private void mapperElement(XNode parent) throws Exception {
     if (parent != null) {
+      //遍历mappers下的子节点
       for (XNode child : parent.getChildren()) {
+        //如果时以package的方式进行配置的话;就解析出包名并将该包下的所有mapper注册到configuration中去
         if ("package".equals(child.getName())) {
           String mapperPackage = child.getStringAttribute("name");
           configuration.addMappers(mapperPackage);
